@@ -1,262 +1,165 @@
 # Modi's Mission — Cross-Platform Recording App
 
-A production-ready web + mobile application where users record video messages through a mirror-style camera interface. Recordings are uploaded to Supabase and managed through a secured admin panel.
+A production-ready web + mobile experience where supporters record mirror-style video messages. Recordings upload straight to Supabase Storage + Postgres and can be reviewed/deleted from a polished admin dashboard. The repo now includes an automated GitHub Pages deployment so the web app is live at **https://akash-droid-dev.github.io/modis-mission/** (static demo – wire it to your Supabase project to make it fully functional).
 
 ---
 
-## Architecture
+## Project Layout
 
 ```
 modis-mission/
 ├── web/                    # Next.js 14 (App Router) — Web App + Admin Panel
+│   ├── public/             # Brand assets
 │   ├── src/
-│   │   ├── app/
-│   │   │   ├── page.tsx           # User-facing mirror recording page
-│   │   │   ├── admin/page.tsx     # Admin panel (login + recordings grid)
-│   │   │   ├── api/auth/route.ts  # Admin authentication endpoint
-│   │   │   ├── layout.tsx         # Root layout
-│   │   │   └── globals.css        # Global styles
-│   │   ├── hooks/
-│   │   │   └── useRecorder.ts     # MediaRecorder hook
-│   │   └── lib/
-│   │       └── supabase.ts        # Supabase client + upload/fetch helpers
-│   ├── public/
-│   │   └── brand-cover.jpg        # Brand image
-│   ├── .env.local.example
-│   ├── package.json
-│   └── tailwind.config.js
-│
-├── mobile/                 # React Native (Expo) — Mobile App
-│   ├── App.tsx                    # Main app with camera recording
-│   ├── src/lib/supabase.ts        # Mobile Supabase client
-│   ├── assets/brand-cover.jpg     # Brand image
-│   ├── app.json                   # Expo config
+│   │   ├── app/            # Pages, layouts and global styles
+│   │   ├── hooks/          # MediaRecorder hook
+│   │   └── lib/            # Supabase helpers
+│   ├── .env.local.example  # Copy → .env.local and fill credentials
+│   ├── next.config.js      # Static export + GitHub Pages basePath logic
 │   └── package.json
 │
-├── shared/
-│   └── constants.ts               # Shared types and constants
+├── mobile/                 # React Native (Expo)
+│   ├── App.tsx             # Mirror camera + upload flow
+│   └── src/lib/supabase.ts # Supabase client for mobile
 │
-├── supabase-setup.sql             # Database + storage setup script
-└── README.md
+├── shared/                 # Shared constants/types
+├── supabase-setup.sql      # DB + Storage schema/policies
+└── .github/workflows/      # GitHub Pages deployment pipeline
 ```
 
-**Backend**: Supabase (PostgreSQL + Object Storage)
+**Backend**: Supabase (PostgreSQL + Storage). No custom server is required after moving auth to the client for the demo build. For production, switch to secure Supabase Auth or edge functions.
 
 ---
 
-## Prerequisites
+## 1. Supabase Bootstrapping
 
-- **Node.js** ≥ 18
-- **npm** or **yarn**
-- **Supabase account** (free tier at [supabase.com](https://supabase.com))
-- **For mobile**: Expo CLI (`npm install -g expo-cli`), Android Studio / Xcode
-
----
-
-## Step 1: Supabase Setup
-
-### 1.1 Create a Supabase Project
-1. Go to [supabase.com](https://supabase.com) → **New Project**
-2. Choose a name and region
-3. Note your **Project URL** and **anon public key** from **Settings → API**
-
-### 1.2 Run Database Setup
-1. Go to **SQL Editor** in your Supabase dashboard
-2. Copy and paste the entire contents of `supabase-setup.sql`
-3. Click **Run**
-
-This creates:
-- `recordings` table with all metadata columns
-- Row-level security policies
-- Storage bucket named `recordings`
-- Storage access policies
-
-### 1.3 Verify Storage Bucket
-1. Go to **Storage** in Supabase dashboard
-2. Confirm a `recordings` bucket exists and is set to **Public**
-3. If not created by SQL, create it manually:
-   - Click **New Bucket** → name: `recordings` → toggle **Public** → Create
+1. Create a project at [supabase.com](https://supabase.com).
+2. Copy your **Project URL** + **anon public key** from **Settings → API**.
+3. In the Supabase dashboard → **SQL Editor**, paste the contents of `supabase-setup.sql` and click **Run**. This creates:
+   - `recordings` table with metadata columns
+   - Row-level security policies
+   - Public `recordings` storage bucket + policies
+4. Confirm the `recordings` bucket exists under **Storage** (make it Public if the SQL didn’t).
 
 ---
 
-## Step 2: Web App Setup (Next.js)
+## 2. Web App (Next.js)
 
 ```bash
 cd web
-
-# Install dependencies
 npm install
-
-# Create environment file
 cp .env.local.example .env.local
 ```
 
-### 2.1 Configure `.env.local`
-Edit `web/.env.local` with your Supabase credentials:
+Edit `.env.local` with your Supabase + demo admin credentials:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://abcdefgh.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIs...
-
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=ModiMission@2026
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+NEXT_PUBLIC_ADMIN_USERNAME=admin
+NEXT_PUBLIC_ADMIN_PASSWORD=ModiMission@2026
 ```
 
-### 2.2 Run Web App
+> ⚠️ Admin credentials are **client-side** for the static Pages build. Replace with real auth (Supabase Auth, Clerk, etc.) before production.
+
+### Local development
 
 ```bash
 npm run dev
 ```
 
-- **User interface**: [http://localhost:3000](http://localhost:3000)
-- **Admin panel**: [http://localhost:3000/admin](http://localhost:3000/admin)
+- User recorder: http://localhost:3000
+- Admin dashboard: http://localhost:3000/admin
 
-### 2.3 Admin Login Credentials
-- **Username**: `admin`
-- **Password**: `ModiMission@2026`
+### Production build (static export)
 
-(Change these in `.env.local` for production)
+```bash
+npm run build   # outputs to web/out thanks to output: 'export'
+```
+
+The Next.js config automatically switches to the correct `basePath` when running in GitHub Actions so the static site works under `/modis-mission`.
 
 ---
 
-## Step 3: Mobile App Setup (Expo)
+## 3. Mobile App (Expo)
 
 ```bash
 cd mobile
-
-# Install dependencies
 npm install
 ```
 
-### 3.1 Configure Supabase Credentials
-Edit `mobile/src/lib/supabase.ts` and replace:
-
-```typescript
-const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';     // ← Your URL
-const SUPABASE_ANON_KEY = 'your-anon-key-here';              // ← Your key
-```
-
-### 3.2 Run on Device/Emulator
+Update `mobile/src/lib/supabase.ts` with the same Supabase URL + anon key, then run:
 
 ```bash
-# Start Expo dev server
-npx expo start
-
-# Run on Android emulator
-npx expo start --android
-
-# Run on iOS simulator (Mac only)
-npx expo start --ios
+npx expo start          # start dev server
+npx expo start --ios    # iOS simulator
+npx expo start --android# Android emulator
 ```
 
-### 3.3 Physical Device
-1. Install **Expo Go** from App Store / Play Store
-2. Scan the QR code from the terminal
-3. Note: Camera recording requires a physical device (not emulator)
+Use a physical device for reliable camera access.
 
 ---
 
-## Features
+## 4. GitHub Pages Deployment
 
-### User Interface
-- **Mirror Camera**: Front camera with horizontal flip (mirror effect)
-- **Record Button**: Bottom-right overlay with state changes (idle → recording → uploading → success/error)
-- **Live Timer**: Elapsed time display during recording with progress bar
-- **Max Duration**: 120 seconds (configurable in `shared/constants.ts`)
-- **Brand Image**: Responsive placement — side panel on desktop, centered card on mobile
-- **Consent Modal**: Privacy-friendly permission request before camera access
-- **Auto-Upload**: Starts automatically when recording stops
-- **Progress Indicator**: Visual upload progress with percentage
-- **Duplicate Prevention**: Blocks re-upload while one is in progress
+The repo already contains `.github/workflows/deploy.yml` which builds the web app and publishes the static export to **GitHub Pages**. Steps to keep it working:
 
-### Admin Panel
-- **Protected Access**: Username/password authentication
-- **Statistics Dashboard**: Total recordings, web/mobile counts, total duration
-- **Recordings Grid**: Responsive card layout with:
-  - Video thumbnail preview
-  - Timestamp and duration
-  - File size and device type badge
-  - Inline play button (opens modal player)
-  - Delete button with confirmation
-- **Video Playback**: In-page modal player with streaming
-- **Visual Consistency**: Matches the main app's saffron + dark theme
+1. **Repo variables** → In GitHub: `Settings → Secrets and variables → Actions → Variables` add:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_ADMIN_USERNAME`
+   - `NEXT_PUBLIC_ADMIN_PASSWORD`
+2. Push to `main` (or run the workflow manually). The pipeline:
+   - Installs dependencies inside `web`
+   - Runs `npm run build` (static export)
+   - Uploads `web/out` as the Pages artifact
+   - Deploys via `actions/deploy-pages`
+3. Live URL: **https://akash-droid-dev.github.io/modis-mission/**
 
-### Technical
-- **Web**: MediaRecorder API with WebM/VP9 codec fallback chain
-- **Mobile**: Expo Camera with native video recording
-- **Storage**: Supabase Storage (S3-compatible) with public URLs
-- **Database**: PostgreSQL via Supabase with RLS policies
-- **Metadata**: Timestamp, device type, duration, file size, user agent
+> Tip: if you fork/rename the repo, the workflow automatically infers the new `basePath` from `GITHUB_REPOSITORY`.
 
 ---
 
-## Configuration
+## 5. Feature Highlights
 
-| Setting | Location | Default |
-|---------|----------|---------|
-| Max recording duration | `shared/constants.ts` | 120 seconds |
-| Admin username | `web/.env.local` | `admin` |
-| Admin password | `web/.env.local` | `ModiMission@2026` |
-| Video bitrate (web) | `web/src/hooks/useRecorder.ts` | 2.5 Mbps |
-| Supabase project | `.env.local` / `supabase.ts` | — |
+### User Recorder
+- Mirror-mode camera preview with onboarding consent modal
+- Floating record button with timer + max duration (default 120 seconds)
+- Upload overlay showing progress / success / error states
+- Automatic upload to Supabase Storage + metadata insert into Postgres
+- Responsive layout with saffron/dark theming
 
----
+### Admin Dashboard
+- Client-side credential gate (storage in `sessionStorage`)
+- Stats row (total uploads, device mix, cumulative duration)
+- Grid of video cards with inline playback + delete actions
+- Modal video player and quick device/duration badges
 
-## Production Deployment
-
-### Web (Vercel)
-```bash
-cd web
-npx vercel --prod
-```
-Set environment variables in Vercel dashboard.
-
-### Mobile (EAS Build)
-```bash
-cd mobile
-npx eas build --platform all
-```
-
-### Security Checklist
-- [ ] Change admin credentials in environment variables
-- [ ] Use proper JWT authentication (replace simple token)
-- [ ] Enable Supabase RLS for authenticated-only delete
-- [ ] Set up CORS policies on Supabase
-- [ ] Add rate limiting on upload endpoint
-- [ ] Enable Supabase Storage signed URLs for private playback
+### Under the Hood
+- `useRecorder` hook wraps `MediaRecorder` with graceful fallbacks
+- `Supabase` helper centralizes upload/list/delete logic
+- Shared constants exported for both web + mobile targets
+- Static export friendly: `next/image` runs in unoptimized mode, basePath and assetPrefix switch automatically inside GitHub Actions
 
 ---
 
-## Tech Stack
+## 6. Troubleshooting
 
-| Layer | Technology |
-|-------|-----------|
-| Web Frontend | Next.js 14 (App Router) + Tailwind CSS |
-| Mobile Frontend | React Native + Expo |
-| Backend/DB | Supabase (PostgreSQL) |
-| Storage | Supabase Storage (S3-compatible) |
-| Auth | Simple token auth (upgrade to Supabase Auth for prod) |
-| Video Recording (Web) | MediaRecorder API |
-| Video Recording (Mobile) | expo-camera |
+| Issue | Fix |
+|-------|-----|
+| Camera prompt never appears | Ensure you accepted the consent modal, run on HTTPS/localhost, and check browser permissions. |
+| Upload fails immediately | Double-check Supabase credentials + ensure the `recordings` bucket is public. |
+| Admin dashboard empty | Confirm RLS policies allow `select` for anon key users. |
+| GitHub Pages shows broken links | Wait for the workflow to finish, or ensure you didn’t disable repository variables (the build still succeeds but the app can’t talk to Supabase). |
+| Need real authentication | Replace the demo check in `web/src/app/admin/page.tsx` with Supabase Auth + serverless edge routes. |
 
 ---
 
-## Troubleshooting
+## 7. Next Steps
 
-**Camera not working on web?**
-- Ensure you're on HTTPS or localhost
-- Check browser permissions (camera + microphone)
-- Try Chrome or Edge (best MediaRecorder support)
+- Harden auth (Supabase Auth, Clerk, Lucia, etc.)
+- Swap Supabase Storage public URLs for signed URLs
+- Add rate limiting to uploads (Cloudflare Turnstile or Supabase Functions)
+- Wire the Expo app to Supabase Auth for mobile recordings
 
-**Upload failing?**
-- Verify Supabase URL and anon key
-- Check that the `recordings` storage bucket exists and is public
-- Verify storage policies allow anonymous uploads
-
-**Mobile camera blank?**
-- Camera preview requires a physical device, not emulator
-- Ensure camera permissions are granted in device settings
-
-**Admin panel won't load recordings?**
-- Check Supabase `recordings` table has SELECT policy enabled
-- Verify the database table was created via SQL setup script
+Have fun capturing messages for the campaign! 🎥🇮🇳

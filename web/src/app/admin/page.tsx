@@ -1,7 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { fetchRecordings, getRecordingUrl, deleteRecording } from '@/lib/supabase';
+
+const ADMIN_USERNAME = process.env.NEXT_PUBLIC_ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'ModiMission@2026';
 
 // ─── Types ───
 interface Recording {
@@ -28,21 +32,16 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
     setError('');
 
     try {
-      const res = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
+      await new Promise((resolve) => setTimeout(resolve, 350));
 
-      if (res.ok) {
-        const data = await res.json();
-        sessionStorage.setItem('admin_token', data.token);
+      if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        sessionStorage.setItem('admin_token', 'demo-admin-token');
         onLogin();
       } else {
         setError('Invalid credentials');
       }
     } catch {
-      setError('Connection error. Please try again.');
+      setError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -315,12 +314,12 @@ export default function AdminPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </button>
-              <a
+              <Link
                 href="/"
                 className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 text-xs font-medium transition-colors"
               >
                 ← Back
-              </a>
+              </Link>
               <button
                 onClick={handleLogout}
                 className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-medium transition-colors"

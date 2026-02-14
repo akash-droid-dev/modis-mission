@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import Link from 'next/link';
 import { useRecorder, RecordingState } from '@/hooks/useRecorder';
 import { uploadRecording } from '@/lib/supabase';
 import Image from 'next/image';
@@ -413,7 +414,7 @@ export default function HomePage() {
         {/* ─── Footer ─── */}
         <footer className="text-center mt-10 md:mt-14 pb-4 page-enter" style={{ animationDelay: '0.4s' }}>
           <div className="flex items-center justify-center gap-4 text-xs text-slate-600">
-            <a href="/admin" className="hover:text-slate-400 transition-colors">Admin Panel</a>
+            <Link href="/admin" className="hover:text-slate-400 transition-colors">Admin Panel</Link>
             <span>•</span>
             <span>Built for India</span>
           </div>

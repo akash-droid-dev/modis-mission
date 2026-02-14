@@ -8,9 +8,9 @@ export const SUPABASE_TABLE = 'recordings';
 export const SUPABASE_BUCKET = 'recordings';
 
 export const ADMIN_CREDENTIALS = {
-  username: 'admin',
-  // In production, use env vars and proper hashing
-  password: 'ModiMission@2026',
+  username: process.env.NEXT_PUBLIC_ADMIN_USERNAME || 'admin',
+  // In production, use env vars and proper hashing / Supabase Auth
+  password: process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'ModiMission@2026',
 };
 
 export interface RecordingMetadata {
