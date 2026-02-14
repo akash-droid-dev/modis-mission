@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --saffron: #FF9933;
+  --saffron-dark: #E8870D;
+  --green: #138808;
+  --teal: #1A6B7A;
+  --teal-dark: #0E4F5C;
+  --gold: #D4A843;
+  --bg: #0A0F1C;
+  --bg-card: #111827;
+  --bg-panel: #1A2236;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: #F8FAFC;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Mirror video flip */
+.mirror-video {
+  transform: scaleX(-1);
+}
+
+/* Recording pulse */
+@keyframes rec-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  50% { box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
+}
+.rec-pulse {
+  animation: rec-pulse 1.4s ease-in-out infinite;
+}
+
+/* Saffron glow */
+@keyframes saffron-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(255, 153, 51, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(255, 153, 51, 0.6); }
+}
+.saffron-glow {
+  animation: saffron-glow 3s ease-in-out infinite;
+}
+
+/* Timer blink */
+@keyframes timer-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.timer-blink {
+  animation: timer-blink 1s step-end infinite;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--saffron) 0%, var(--gold) 50%, var(--saffron) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--teal);
+  border-radius: 3px;
+}
+
+/* Page transitions */
+.page-enter {
+  animation: fade-slide-up 0.5s ease-out;
+}
+@keyframes fade-slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Brand image container */
+.brand-image-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(255, 153, 51, 0.15);
+  border: 1px solid rgba(255, 153, 51, 0.2);
+}
+.brand-image-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 60%, rgba(10, 15, 28, 0.6) 100%);
+  pointer-events: none;
+}

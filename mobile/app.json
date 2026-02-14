@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Modi's Mission",
+    "slug": "modis-mission",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/brand-cover.jpg",
+    "scheme": "modismission",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0A0F1C"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.modismission.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Modi's Mission needs camera access to record your video message.",
+        "NSMicrophoneUsageDescription": "Modi's Mission needs microphone access to record your audio."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0A0F1C"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.modismission.app"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Modi's Mission needs camera access to record your video message.",
+          "microphonePermission": "Modi's Mission needs microphone access to record your audio.",
+          "recordAudioAndroid": true
+        }
+      ]
+    ]
+  }
+}
